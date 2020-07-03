@@ -19,15 +19,15 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(tf2_ros REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(orocos_kdl REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(transform_service_srv REQUIRED)
-find_package(orocos_kdl REQUIRED)
-find_package(tf2 REQUIRED)
 
 add_executable(transform_service src/transform_service.cpp)
 
 ament_target_dependencies(transform_service 
-rclcpp tf2_ros geometry_msgs transform_service_srv orocos_kdl tf2)
+rclcpp tf2_ros tf2 orocos_kdl geometry_msgs transform_service_srv)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
