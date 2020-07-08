@@ -1,7 +1,7 @@
 #include <tf2_ros/transform_listener.h>
 #include <memory>
-#include "tf2_geometry_msgs/tf2_geometry_msgs.h"
 #include "rclcpp/rclcpp.hpp"
+#include "tf2_geometry_msgs/tf2_geometry_msgs.h"
 #include "transform_service_srv/srv/transform_pose.hpp"
 
 using std::placeholders::_1;
@@ -13,9 +13,10 @@ class TransformServer : public rclcpp::Node {
       : Node("transform_service"),
         buffer_(std::make_shared<rclcpp::Clock>(RCL_ROS_TIME)),
         tfl_(this->buffer_, this, false) {
-    this->create_service<transform_service_srv::srv::TransformPose>(
-        "transform_service",
-        std::bind(&TransformServer::transform_pose_callback, this, _1, _2));
+    this->service_ =
+        this->create_service<transform_service_srv::srv::TransformPose>(
+            "transform_service",
+            std::bind(&TransformServer::transform_pose_callback, this, _1, _2));
     buffer_.setUsingDedicatedThread(true);
     RCLCPP_INFO(get_logger(), "Ready to transform poses.");
   }
@@ -27,9 +28,19 @@ class TransformServer : public rclcpp::Node {
       std::shared_ptr<transform_service_srv::srv::TransformPose::Response>
           response) {
     try {
+      // // I was hoping that canTransform would help with extrapolation
+      // // exceptions, but it just seems to slow things down.
+      // if (buffer_.canTransform(
+      //         request->target_frame, request->source_pose.header.frame_id,
+      //         tf2_ros::fromMsg(request->source_pose.header.stamp),
+      //         tf2::durationFromSec(1.0))) {
       buffer_.transform(request->source_pose, response->target_pose,
                         request->target_frame);
       response->success = true;
+      // } else {
+      //   response->success = false;
+      // }
+
     } catch (tf2::TransformException& ex) {
       RCLCPP_WARN(get_logger(), "%s", ex.what());
       response->success = false;
