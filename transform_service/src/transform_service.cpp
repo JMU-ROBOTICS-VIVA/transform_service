@@ -12,7 +12,7 @@ class TransformServer : public rclcpp::Node {
   TransformServer()
       : Node("transform_service"),
         buffer_(std::make_shared<rclcpp::Clock>(RCL_ROS_TIME)),
-        tfl_(this->buffer_, this, false) {
+        tfl_(this->buffer_, true) {
     this->service_ =
         this->create_service<transform_service_srv::srv::TransformPose>(
             "transform_service",
@@ -28,18 +28,16 @@ class TransformServer : public rclcpp::Node {
       std::shared_ptr<transform_service_srv::srv::TransformPose::Response>
           response) {
     try {
-      // // I was hoping that canTransform would help with extrapolation
-      // // exceptions, but it just seems to slow things down.
-      // if (buffer_.canTransform(
-      //         request->target_frame, request->source_pose.header.frame_id,
-      //         tf2_ros::fromMsg(request->source_pose.header.stamp),
-      //         tf2::durationFromSec(1.0))) {
+      if (buffer_.canTransform(
+              request->target_frame, request->source_pose.header.frame_id,
+              tf2_ros::fromMsg(request->source_pose.header.stamp),
+              tf2::durationFromSec(1.0))) {
       buffer_.transform(request->source_pose, response->target_pose,
                         request->target_frame);
       response->success = true;
-      // } else {
-      //   response->success = false;
-      // }
+      } else {
+        response->success = false;
+      }
 
     } catch (tf2::TransformException& ex) {
       RCLCPP_WARN(get_logger(), "%s", ex.what());
