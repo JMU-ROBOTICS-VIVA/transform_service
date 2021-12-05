@@ -4,15 +4,22 @@
 #include "tf2_geometry_msgs/tf2_geometry_msgs.h"
 #include "transform_service_srv/srv/transform_pose.hpp"
 
+#include <iostream>
+
 using std::placeholders::_1;
 using std::placeholders::_2;
+
+/*
+ * Not sure the true parameter in the tfl_ construction call
+ * is necessary (tf_echo does not contain that parm 
+ */
 
 class TransformServer : public rclcpp::Node {
  public:
   TransformServer()
       : Node("transform_service"),
-        buffer_(std::make_shared<rclcpp::Clock>(RCL_ROS_TIME)),
-        tfl_(this->buffer_, true) {
+             buffer_(std::make_shared<rclcpp::Clock>(RCL_ROS_TIME)),
+        tfl_(this->buffer_, true) {  
     this->service_ =
         this->create_service<transform_service_srv::srv::TransformPose>(
             "transform_service",
@@ -28,13 +35,18 @@ class TransformServer : public rclcpp::Node {
       std::shared_ptr<transform_service_srv::srv::TransformPose::Response>
           response) {
     try {
+      /* printf("received a request\n");
+      std::cout << "from frame:" << request->source_pose.header.frame_id <<
+	      " to frame:" << request->target_frame << std::endl; */
+
       if (buffer_.canTransform(
               request->target_frame, request->source_pose.header.frame_id,
               tf2_ros::fromMsg(request->source_pose.header.stamp),
-              tf2::durationFromSec(1.0))) {
-      buffer_.transform(request->source_pose, response->target_pose,
+              tf2::durationFromSec(2.0))) {
+        buffer_.transform(request->source_pose, response->target_pose,
                         request->target_frame);
-      response->success = true;
+        response->success = true;
+        // printf("transform done\n");
       } else {
         response->success = false;
       }
