@@ -26,8 +26,8 @@ def generate_launch_description():
     return LaunchDescription([
         Node(
             package="transform_service_demo",
-            node_executable="transform_tester",
-            node_name="transform_tester",
+            executable="transform_tester",
+            name="transform_tester",
             output="screen",
             parameters=[
                 {"use_sim_time": True}
@@ -35,8 +35,8 @@ def generate_launch_description():
         ),
         Node(
             package="transform_service",
-            node_executable="transform_service",
-            node_name="transform_service",
+            executable="transform_service",
+            name="transform_service",
             output="screen",
             parameters=[
                 {"use_sim_time": True}
@@ -53,7 +53,7 @@ def generate_launch_description():
             arguments=['-d', rviz_path]
         ),
         included_launch
-        
+
     ])
 if __name__ == "__main__":
     print(generate_launch_description().entities)

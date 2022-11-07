@@ -33,7 +33,7 @@ class TransformTester(rclpy.node.Node):
 
         # Create the publisher
         self.publisher_ = self.create_publisher(PoseStamped, 'offset_pose', 10)
-        timer_period = 0.01  # seconds
+        timer_period = 0.1  # seconds
 
         # Set up a timed callback that will repeatedly make service requests.
         self.timer = self.create_timer(timer_period, self.timer_callback)
